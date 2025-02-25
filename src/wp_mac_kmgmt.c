@@ -797,7 +797,10 @@ const OSSL_DISPATCH wp_hmac_keymgmt_functions[] = {
  */
 static wp_Mac *wp_cmac_new(WOLFPROV_CTX *provCtx)
 {
-    return wp_mac_new(provCtx, WP_MAC_TYPE_CMAC);
+    WOLFPROV_ENTER(WP_LOG_MAC, "wp_cmac_new");
+    wp_Mac *mac = wp_mac_new(provCtx, WP_MAC_TYPE_CMAC);
+    WOLFPROV_LEAVE(WP_LOG_MAC, "wp_cmac_new" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), mac != NULL);
+    return mac;
 }
 
 /**
@@ -808,6 +811,7 @@ static wp_Mac *wp_cmac_new(WOLFPROV_CTX *provCtx)
  */
 static const OSSL_PARAM *wp_cmac_gettable_params(WOLFPROV_CTX* provCtx)
 {
+    WOLFPROV_ENTER(WP_LOG_MAC, "wp_cmac_gettable_params");
     /**
      * Supported gettable parameters for CMAC key object.
      */
@@ -817,6 +821,7 @@ static const OSSL_PARAM *wp_cmac_gettable_params(WOLFPROV_CTX* provCtx)
         OSSL_PARAM_END
     };
     (void)provCtx;
+    WOLFPROV_LEAVE(WP_LOG_MAC, "wp_cmac_gettable_params" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), 1);
     return wp_cmac_supported_gettable_params;
 }
 
@@ -830,6 +835,7 @@ static const OSSL_PARAM *wp_cmac_gettable_params(WOLFPROV_CTX* provCtx)
 static const OSSL_PARAM* wp_cmac_gen_settable_params(wp_MacGenCtx* ctx,
     WOLFPROV_CTX* provCtx)
 {
+    WOLFPROV_ENTER(WP_LOG_MAC, "wp_cmac_gen_settable_params");
     /**
      * Supported settable parameters for HMAC generation context.
      */
@@ -840,6 +846,7 @@ static const OSSL_PARAM* wp_cmac_gen_settable_params(wp_MacGenCtx* ctx,
     };
     (void)ctx;
     (void)provCtx;
+    WOLFPROV_LEAVE(WP_LOG_MAC, "wp_cmac_gen_settable_params" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), 1);
     return wp_cmac_gen_supported_settable_params;
 }
 
@@ -873,7 +880,10 @@ static const OSSL_PARAM* wp_cmac_key_types(int selection)
  */
 static const OSSL_PARAM *wp_cmac_import_types(int selection)
 {
-    return wp_cmac_key_types(selection);
+    WOLFPROV_ENTER(WP_LOG_MAC, "wp_cmac_import_types");
+    const OSSL_PARAM *params = wp_cmac_key_types(selection);
+    WOLFPROV_LEAVE(WP_LOG_MAC, "wp_cmac_import_types" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), 1);
+    return params;
 }
 /**
  * Get the key parameters when exporting for a selection.
@@ -883,7 +893,10 @@ static const OSSL_PARAM *wp_cmac_import_types(int selection)
  */
 static const OSSL_PARAM *wp_cmac_export_types(int selection)
 {
-    return wp_cmac_key_types(selection);
+    WOLFPROV_ENTER(WP_LOG_MAC, "wp_cmac_export_types");
+    const OSSL_PARAM *params = wp_cmac_key_types(selection);
+    WOLFPROV_LEAVE(WP_LOG_MAC, "wp_cmac_export_types" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), 1);
+    return params;
 }
 
 /**
@@ -898,7 +911,10 @@ static const OSSL_PARAM *wp_cmac_export_types(int selection)
 static wp_MacGenCtx* wp_cmac_gen_init(WOLFPROV_CTX* provCtx,
     int selection, const OSSL_PARAM params[])
 {
-    return wp_mac_gen_init(provCtx, selection, params, WP_MAC_TYPE_CMAC);
+    WOLFPROV_ENTER(WP_LOG_MAC, "wp_cmac_gen_init");
+    wp_MacGenCtx* ctx = wp_mac_gen_init(provCtx, selection, params, WP_MAC_TYPE_CMAC);
+    WOLFPROV_LEAVE(WP_LOG_MAC, "wp_cmac_gen_init" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ctx != NULL);
+    return ctx;
 }
 
 /** Dispatch table for CMAC key management. */

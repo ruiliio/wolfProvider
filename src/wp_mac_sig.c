@@ -378,7 +378,10 @@ const OSSL_DISPATCH wp_hmac_signature_functions[] = {
 static wp_MacSigCtx* wp_cmac_ctx_new(WOLFPROV_CTX* provCtx,
     const char* propQuery)
 {
-    return wp_mac_ctx_new(provCtx, propQuery, WP_NAMES_CMAC, WP_MAC_TYPE_CMAC);
+    WOLFPROV_ENTER(WP_LOG_MAC, "wp_cmac_ctx_new");
+    wp_MacSigCtx* ctx = wp_mac_ctx_new(provCtx, propQuery, WP_NAMES_CMAC, WP_MAC_TYPE_CMAC);
+    WOLFPROV_LEAVE(WP_LOG_MAC, "wp_cmac_ctx_new" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ctx != NULL);
+    return ctx;
 }
 
 /** Dspatch table for HMAC signing. */

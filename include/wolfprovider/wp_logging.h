@@ -131,6 +131,7 @@ int wolfProv_SetLogComponents(int componentMask);
 
 #define WOLFPROV_STRINGIZE_HELPER(x) #x
 #define WOLFPROV_STRINGIZE(x) WOLFPROV_STRINGIZE_HELPER(x)
+#define WOLFPROV_FUNC_NAME(func) #func
 
 #define WOLFPROV_ERROR(type, err)                                           \
     WOLFPROV_ERROR_LINE(type, err, __FILE__, __LINE__)
@@ -157,8 +158,8 @@ void WOLFPROV_BUFFER(int type, const unsigned char* buffer,
 
 #else
 
-#define WOLFPROV_ENTER(t, m)
-#define WOLFPROV_LEAVE(t, m, r)
+#define WOLFPROV_ENTER(t, f) WOLFPROV_ENTER(t, #f " at " __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__))
+#define WOLFPROV_LEAVE(t, f, r) WOLFPROV_LEAVE(t, #f " at " __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), r)
 #define WOLFPROV_MSG(t, m, ...)
 #define WOLFPROV_MSG_VERBOSE(t, m, ...)
 #define WOLFPROV_ERROR(t, e)

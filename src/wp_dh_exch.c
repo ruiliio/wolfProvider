@@ -175,6 +175,7 @@ static wp_DhCtx* wp_dh_dupctx(wp_DhCtx* src)
  */
 static int wp_dh_init(wp_DhCtx* ctx, wp_Dh* dh, const OSSL_PARAM params[])
 {
+    WOLFPROV_ENTER(WP_LOG_PK, "wp_dh_init");
     int ok = 1;
 
     if (!wolfssl_prov_is_running()) {
@@ -195,7 +196,7 @@ static int wp_dh_init(wp_DhCtx* ctx, wp_Dh* dh, const OSSL_PARAM params[])
         ok = wp_dh_set_ctx_params(ctx, params);
     }
 
-    WOLFPROV_LEAVE(WP_LOG_KE, __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
+    WOLFPROV_LEAVE(WP_LOG_PK, "wp_dh_init" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
     return ok;
 }
 
@@ -315,6 +316,7 @@ static int wp_dh_derive_secret(wp_DhCtx* ctx, unsigned char* secret,
 static int wp_dh_derive(wp_DhCtx* ctx, unsigned char* secret,
     size_t* secLen, size_t secSize)
 {
+    WOLFPROV_ENTER(WP_LOG_PK, "wp_dh_derive");
     int ok = 1;
     int done = 0;
     unsigned char* out = NULL;
@@ -376,7 +378,7 @@ static int wp_dh_derive(wp_DhCtx* ctx, unsigned char* secret,
 
     OPENSSL_clear_free(tmp, maxLen);
 
-    WOLFPROV_LEAVE(WP_LOG_KE, __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
+    WOLFPROV_LEAVE(WP_LOG_PK, "wp_dh_derive" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
     return ok;
 }
 
@@ -390,6 +392,7 @@ static int wp_dh_derive(wp_DhCtx* ctx, unsigned char* secret,
 static const OSSL_PARAM* wp_dh_settable_ctx_params(wp_DhCtx* ctx,
     WOLFPROV_CTX* provCtx)
 {
+    WOLFPROV_ENTER(WP_LOG_PK, "wp_dh_settable_ctx_params");
     /**
      * Supported settable parameters for DH key exchange context.
      */
@@ -404,6 +407,7 @@ static const OSSL_PARAM* wp_dh_settable_ctx_params(wp_DhCtx* ctx,
     };
     (void)ctx;
     (void)provCtx;
+    WOLFPROV_LEAVE(WP_LOG_PK, "wp_dh_settable_ctx_params" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), 1);
     return wp_dh_supported_settable_ctx_params;
 }
 
@@ -417,6 +421,7 @@ static const OSSL_PARAM* wp_dh_settable_ctx_params(wp_DhCtx* ctx,
  */
 static int wp_dh_set_peer(wp_DhCtx* ctx, wp_Dh* peer)
 {
+    WOLFPROV_ENTER(WP_LOG_PK, "wp_dh_set_peer");
     int ok = 1;
 
     if (!wolfssl_prov_is_running()) {
@@ -438,7 +443,7 @@ static int wp_dh_set_peer(wp_DhCtx* ctx, wp_Dh* peer)
         ctx->peer = peer;
     }
 
-    WOLFPROV_LEAVE(WP_LOG_KE, __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
+    WOLFPROV_LEAVE(WP_LOG_PK, "wp_dh_set_peer" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
     return ok;
 }
 
@@ -524,6 +529,7 @@ static int wp_dh_set_param_kdf_digest(wp_DhCtx* ctx, const OSSL_PARAM params[])
  */
 static int wp_dh_set_ctx_params(wp_DhCtx* ctx, const OSSL_PARAM params[])
 {
+    WOLFPROV_ENTER(WP_LOG_PK, "wp_dh_set_ctx_params");
     int ok = 1;
 
     if (params != NULL) {
@@ -546,7 +552,7 @@ static int wp_dh_set_ctx_params(wp_DhCtx* ctx, const OSSL_PARAM params[])
         }
     }
 
-    WOLFPROV_LEAVE(WP_LOG_KE, __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
+    WOLFPROV_LEAVE(WP_LOG_PK, "wp_dh_set_ctx_params" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
     return ok;
 }
 
@@ -560,6 +566,7 @@ static int wp_dh_set_ctx_params(wp_DhCtx* ctx, const OSSL_PARAM params[])
 static const OSSL_PARAM* wp_dh_gettable_ctx_params(wp_DhCtx* ctx,
     WOLFPROV_CTX* provCtx)
 {
+    WOLFPROV_ENTER(WP_LOG_PK, "wp_dh_gettable_ctx_params");
     /**
      * Supported gettable parameters for DH key exchange context.
      */
@@ -574,6 +581,7 @@ static const OSSL_PARAM* wp_dh_gettable_ctx_params(wp_DhCtx* ctx,
     };
     (void)ctx;
     (void)provCtx;
+    WOLFPROV_LEAVE(WP_LOG_PK, "wp_dh_gettable_ctx_params" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), 1);
     return wp_dh_supported_gettable_ctx_params;
 }
 
@@ -615,6 +623,7 @@ static int wp_dh_get_params_kdf(wp_DhCtx* ctx, OSSL_PARAM params[])
  */
 static int wp_dh_get_ctx_params(wp_DhCtx* ctx, OSSL_PARAM params[])
 {
+     WOLFPROV_ENTER(WP_LOG_PK, "wp_dh_get_ctx_params");
      int ok = 1;
      OSSL_PARAM* p;
 
@@ -645,7 +654,7 @@ static int wp_dh_get_ctx_params(wp_DhCtx* ctx, OSSL_PARAM params[])
          }
      }
 
-     WOLFPROV_LEAVE(WP_LOG_KE, __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
+     WOLFPROV_LEAVE(WP_LOG_PK, "wp_dh_get_ctx_params" ":" __FILE__ ":" WOLFPROV_STRINGIZE(__LINE__), ok);
      return ok;
 }
 
