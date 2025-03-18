@@ -1,6 +1,10 @@
 #!/bin/bash
 # Script to reproduce the RSA X931 signature verification issue
 
+# Source the common configuration file
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+source "$SCRIPT_DIR/common/config.sh"
+
 # Default settings
 ITERATIONS=100
 DEBUG=0
@@ -56,8 +60,10 @@ if [ $SYSTEM_OPENSSL -eq 1 ]; then
     export OPENSSL_MODULES=/usr/lib/x86_64-linux-gnu/engines-3
 else
     echo "Using local OpenSSL build"
-    export LD_LIBRARY_PATH=~/repos/wolfProvider/wolfprov-install/lib:~/repos/wolfProvider/wolfssl-install/lib:~/repos/wolfProvider/openssl-install/lib64
-    export OPENSSL_MODULES=~/repos/wolfProvider/wolfprov-install/lib
+    # Use the environment setup function from the common configuration
+    setup_environment
+    # Add wolfSSL and OpenSSL libraries to LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH="$WOLFPROV_DIR/wolfssl-install/lib:$WOLFPROV_DIR/openssl-install/lib64:$LD_LIBRARY_PATH"
 fi
 
 # Set debug mode if requested
@@ -68,7 +74,7 @@ fi
 
 # Compile the test program
 echo "Compiling test program..."
-gcc -o rsa_x931_wolf_openssl_test rsa_x931_wolf_openssl_test.c -I../../include -I~/repos/wolfProvider/openssl-install/include -L~/repos/wolfProvider/openssl-install/lib64 -L~/repos/wolfProvider/wolfprov-install/lib -lcrypto -g -O1
+gcc -o rsa_x931_wolf_openssl_test rsa_x931_wolf_openssl_test.c -I"$WOLFPROV_DIR/include" -I"$WOLFPROV_DIR/openssl-install/include" -L"$WOLFPROV_DIR/openssl-install/lib64" -L"$WOLFPROV_INSTALL_DIR/lib" -lcrypto -g -O1
 
 # Run the test
 echo "Running $ITERATIONS iterations..."

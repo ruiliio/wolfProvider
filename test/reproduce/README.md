@@ -36,12 +36,30 @@ The wolfProvider `make check` fails intermittently during GitHub Actions with an
 2. Run the test cases:
    ```bash
    cd ~/repos/wolfProvider/test/reproduce
-   gcc -o rsa_x931_asan_test rsa_x931_asan_test.c -I../../include -I/path/to/openssl/include -L/path/to/openssl/lib -lcrypto -fsanitize=address -g -O1
-   export LD_LIBRARY_PATH=/path/to/wolfprov/lib:/path/to/wolfssl/lib:/path/to/openssl/lib
-   export OPENSSL_MODULES=/path/to/wolfprov/lib
+   
+   # The test scripts use a common configuration file that defines WOLFPROV_INSTALL_DIR
+   # You can override it by setting the environment variable before running the tests
+   export WOLFPROV_INSTALL_DIR=/path/to/your/wolfprov-install
+   
+   # Compile and run the test
+   gcc -o rsa_x931_asan_test rsa_x931_asan_test.c -I../../include -lcrypto -fsanitize=address -g -O1
    ./rsa_x931_asan_test 100
    ```
 
+## Common Configuration
+
+All test scripts in this directory use a centralized configuration defined in `common/config.sh`. This file defines common variables and functions used across all test scripts:
+
+- `WOLFPROV_INSTALL_DIR`: Path to the wolfProvider installation directory
+- `WOLFPROV_CONFIG`: Path to the wolfProvider configuration file
+- `OPENSSL_MODULES`: Path to the OpenSSL modules directory
+
+You can override these variables by setting them in your environment before running the tests:
+
+```bash
+export WOLFPROV_INSTALL_DIR=/path/to/your/wolfprov-install
+./run_all_tests.sh
+```
 ## Analysis
 
 The X931 padding verification in wolfProvider's `wp_rsa_verify_x931` function has specific requirements for the signature format. The intermittent failures occur when there's a mismatch between how wolfProvider formats the signature and how OpenSSL expects it.

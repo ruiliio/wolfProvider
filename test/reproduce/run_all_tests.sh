@@ -1,6 +1,10 @@
 #!/bin/bash
 # Master script to run all tests and generate comprehensive reports
 
+# Source the common configuration file
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+source "$SCRIPT_DIR/common/config.sh"
+
 # Create output directories
 mkdir -p results/standard
 mkdir -p results/debug

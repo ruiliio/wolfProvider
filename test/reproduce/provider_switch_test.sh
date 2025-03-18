@@ -4,6 +4,8 @@
 # This simulates the GitHub Actions environment where multiple tests run in parallel
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# Source the common configuration file
+source "$SCRIPT_DIR/common/config.sh"
 WOLFPROV_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Number of iterations

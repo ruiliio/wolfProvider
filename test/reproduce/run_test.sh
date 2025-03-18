@@ -4,6 +4,8 @@
 # This script tries different environment configurations to trigger the issue
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# Source the common configuration file
+source "$SCRIPT_DIR/common/config.sh"
 WOLFPROV_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Compile the test if it doesn't exist
@@ -11,9 +13,9 @@ if [ ! -f "$SCRIPT_DIR/rsa_x931_repro" ]; then
     echo "Compiling test case..."
     gcc -o "$SCRIPT_DIR/rsa_x931_repro" "$SCRIPT_DIR/rsa_x931_repro.c" \
         -I"$WOLFPROV_DIR/include" \
-        -L"$WOLFPROV_DIR/wolfprov-install/lib" \
+        -L"$WOLFPROV_INSTALL_DIR/lib" \
         -lwolfprov -lcrypto -lwolfssl \
-        -Wl,-rpath,"$WOLFPROV_DIR/wolfprov-install/lib"
+        -Wl,-rpath,"$WOLFPROV_INSTALL_DIR/lib"
 fi
 
 # Function to run test with specific environment
@@ -62,7 +64,7 @@ echo "Attempting to reproduce RSA X931 signature verification issue..."
 run_test "System OpenSSL" \
     "/lib/x86_64-linux-gnu" \
     "$WOLFPROV_DIR/wolfssl-install/lib" \
-    "$WOLFPROV_DIR/wolfprov-install/lib" \
+    "$WOLFPROV_INSTALL_DIR/lib" \
     "1" \
     "100"
 
@@ -70,7 +72,7 @@ run_test "System OpenSSL" \
 run_test "Local OpenSSL" \
     "$WOLFPROV_DIR/openssl-install/lib64" \
     "$WOLFPROV_DIR/wolfssl-install/lib" \
-    "$WOLFPROV_DIR/wolfprov-install/lib" \
+    "$WOLFPROV_INSTALL_DIR/lib" \
     "1" \
     "100"
 
@@ -78,7 +80,7 @@ run_test "Local OpenSSL" \
 run_test "No Debug" \
     "$WOLFPROV_DIR/openssl-install/lib64" \
     "$WOLFPROV_DIR/wolfssl-install/lib" \
-    "$WOLFPROV_DIR/wolfprov-install/lib" \
+    "$WOLFPROV_INSTALL_DIR/lib" \
     "0" \
     "100"
 
@@ -86,7 +88,7 @@ run_test "No Debug" \
 run_test "High Iterations" \
     "$WOLFPROV_DIR/openssl-install/lib64" \
     "$WOLFPROV_DIR/wolfssl-install/lib" \
-    "$WOLFPROV_DIR/wolfprov-install/lib" \
+    "$WOLFPROV_INSTALL_DIR/lib" \
     "1" \
     "1000"
 

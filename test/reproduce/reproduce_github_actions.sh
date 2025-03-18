@@ -1,6 +1,10 @@
 #!/bin/bash
 # Script to simulate the GitHub Actions environment for reproducing the issue
 
+# Source the common configuration file
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+source "$SCRIPT_DIR/common/config.sh"
+
 # Create a temporary directory for the test
 TEMP_DIR=$(mktemp -d)
 cd "$TEMP_DIR" || exit 1
