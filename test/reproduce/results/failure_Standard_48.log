@@ -1,0 +1,39 @@
+Run test case: 53
+
+Running tests using dynamic provider.
+###### TESTSUITE START
+
+#### Start: 53 - test_rsa_sign_verify_x931
+MSG: Load RSA key
+MSG: Test signing/verifying arbitrary data
+MSG: Sign with OpenSSL
+MSG: Verify with wolfprovider
+MSG: Signature verified
+MSG: Verify bad signature with wolfprovider
+MSG: Signature not verified
+MSG: Sign with wolfprovider
+MSG: Verify with OpenSSL
+MSG: Signature verified
+MSG: Test creating/verifying a signature
+MSG: Sign with OpenSSL
+MSG: Verify with wolfprovider
+MSG: Signature verified
+MSG: Verify bad signature with wolfprovider
+MSG: Signature not verified
+MSG: Sign with wolfprovider
+MSG: Verify with OpenSSL
+MSG: Signature verified
+MSG: Load RSA key
+MSG: Test signing/verifying arbitrary data
+MSG: Sign with OpenSSL
+MSG: Verify with wolfprovider
+MSG: Signature verified
+MSG: Verify bad signature with wolfprovider
+MSG: Signature not verified
+MSG: Sign with wolfprovider
+MSG: Verify with OpenSSL
+MSG: Signature not verified
+#### FAILED: 53 - test_rsa_sign_verify_x931 (err: 1)
+
+## FAIL: 53: test_rsa_sign_verify_x931 (err: 1)
+###### TESTSUITE FAILED

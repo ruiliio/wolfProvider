@@ -1,0 +1,565 @@
+Starting RSA X931 signature verification issue reproduction test at Mon Mar 17 22:51:09 UTC 2025
+Attempting to reproduce RSA X931 signature verification issue...
+=== Testing configuration: Standard ===
+Iterations: 100
+Debug: 0
+Using system OpenSSL: 0
+Using master branches: 0
+Environment variables:
+LD_LIBRARY_PATH: /home/ubuntu/repos/wolfProvider/wolfprov-install/lib:/home/ubuntu/repos/wolfProvider/wolfssl-install/lib:/home/ubuntu/repos/wolfProvider/openssl-install/lib64
+OPENSSL_MODULES: /home/ubuntu/repos/wolfProvider/wolfprov-install/lib
+OPENSSL_CONF: not set
+WOLFPROV_DEBUG: not set
+Running test 100 times...
+Test run 1: PASS
+Test run 2: PASS
+Test run 3: PASS
+Test run 4: PASS
+Test run 5: PASS
+Test run 6: PASS
+Test run 7: PASS
+Test run 8: PASS
+Test run 9: PASS
+Test run 10: PASS
+Test run 11: PASS
+Test run 12: PASS
+Test run 13: PASS
+Test run 14: PASS
+Test run 15: PASS
+Test run 16: PASS
+Test run 17: PASS
+Test run 18: PASS
+Test run 19: PASS
+Test run 20: PASS
+Test run 21: PASS
+Test run 22: PASS
+Test run 23: PASS
+Test run 24: PASS
+Test run 25: PASS
+Test run 26: PASS
+Test run 27: PASS
+Test run 28: PASS
+Test run 29: PASS
+Test run 30: PASS
+Test run 31: PASS
+Test run 32: PASS
+Test run 33: PASS
+Test run 34: PASS
+Test run 35: PASS
+Test run 36: PASS
+Test run 37: FAIL
+  Found 'Signature not verified' error
+Test run 38: PASS
+Test run 39: PASS
+Test run 40: PASS
+Test run 41: PASS
+Test run 42: PASS
+Test run 43: PASS
+Test run 44: PASS
+Test run 45: PASS
+Test run 46: PASS
+Test run 47: PASS
+Test run 48: FAIL
+  Found 'Signature not verified' error
+Test run 49: FAIL
+  Found 'Signature not verified' error
+Test run 50: PASS
+Test run 51: PASS
+Test run 52: PASS
+Test run 53: PASS
+Test run 54: PASS
+Test run 55: FAIL
+  Found 'Signature not verified' error
+Test run 56: PASS
+Test run 57: PASS
+Test run 58: PASS
+Test run 59: PASS
+Test run 60: PASS
+Test run 61: PASS
+Test run 62: PASS
+Test run 63: PASS
+Test run 64: PASS
+Test run 65: PASS
+Test run 66: PASS
+Test run 67: PASS
+Test run 68: PASS
+Test run 69: PASS
+Test run 70: PASS
+Test run 71: PASS
+Test run 72: PASS
+Test run 73: PASS
+Test run 74: PASS
+Test run 75: PASS
+Test run 76: PASS
+Test run 77: PASS
+Test run 78: FAIL
+  Found 'Signature not verified' error
+Test run 79: PASS
+Test run 80: PASS
+Test run 81: FAIL
+  Found 'Signature not verified' error
+Test run 82: PASS
+Test run 83: PASS
+Test run 84: PASS
+Test run 85: FAIL
+  Found 'Signature not verified' error
+Test run 86: PASS
+Test run 87: PASS
+Test run 88: PASS
+Test run 89: PASS
+Test run 90: PASS
+Test run 91: PASS
+Test run 92: PASS
+Test run 93: PASS
+Test run 94: PASS
+Test run 95: PASS
+Test run 96: PASS
+Test run 97: PASS
+Test run 98: PASS
+Test run 99: PASS
+Test run 100: PASS
+Results: 93 passed, 7 failed (7/100 = 7.00% failure rate)
+=== Testing configuration: Debug ===
+Iterations: 100
+Debug: 1
+Using system OpenSSL: 0
+Using master branches: 0
+Environment variables:
+LD_LIBRARY_PATH: /home/ubuntu/repos/wolfProvider/wolfprov-install/lib:/home/ubuntu/repos/wolfProvider/wolfssl-install/lib:/home/ubuntu/repos/wolfProvider/openssl-install/lib64
+OPENSSL_MODULES: /home/ubuntu/repos/wolfProvider/wolfprov-install/lib
+OPENSSL_CONF: not set
+WOLFPROV_DEBUG: 1
+Running test 100 times...
+Test run 1: PASS
+Test run 2: PASS
+Test run 3: PASS
+Test run 4: FAIL
+  Found 'Signature not verified' error
+Test run 5: PASS
+Test run 6: PASS
+Test run 7: PASS
+Test run 8: PASS
+Test run 9: PASS
+Test run 10: PASS
+Test run 11: PASS
+Test run 12: PASS
+Test run 13: PASS
+Test run 14: PASS
+Test run 15: PASS
+Test run 16: PASS
+Test run 17: PASS
+Test run 18: PASS
+Test run 19: PASS
+Test run 20: PASS
+Test run 21: PASS
+Test run 22: PASS
+Test run 23: PASS
+Test run 24: PASS
+Test run 25: PASS
+Test run 26: PASS
+Test run 27: PASS
+Test run 28: PASS
+Test run 29: PASS
+Test run 30: PASS
+Test run 31: PASS
+Test run 32: PASS
+Test run 33: PASS
+Test run 34: PASS
+Test run 35: PASS
+Test run 36: PASS
+Test run 37: PASS
+Test run 38: PASS
+Test run 39: PASS
+Test run 40: PASS
+Test run 41: PASS
+Test run 42: PASS
+Test run 43: PASS
+Test run 44: PASS
+Test run 45: PASS
+Test run 46: PASS
+Test run 47: PASS
+Test run 48: PASS
+Test run 49: PASS
+Test run 50: PASS
+Test run 51: PASS
+Test run 52: PASS
+Test run 53: PASS
+Test run 54: PASS
+Test run 55: PASS
+Test run 56: PASS
+Test run 57: PASS
+Test run 58: PASS
+Test run 59: PASS
+Test run 60: PASS
+Test run 61: PASS
+Test run 62: PASS
+Test run 63: PASS
+Test run 64: PASS
+Test run 65: PASS
+Test run 66: PASS
+Test run 67: PASS
+Test run 68: PASS
+Test run 69: PASS
+Test run 70: PASS
+Test run 71: PASS
+Test run 72: PASS
+Test run 73: PASS
+Test run 74: PASS
+Test run 75: PASS
+Test run 76: PASS
+Test run 77: PASS
+Test run 78: PASS
+Test run 79: PASS
+Test run 80: PASS
+Test run 81: PASS
+Test run 82: PASS
+Test run 83: PASS
+Test run 84: PASS
+Test run 85: PASS
+Test run 86: PASS
+Test run 87: PASS
+Test run 88: PASS
+Test run 89: PASS
+Test run 90: PASS
+Test run 91: PASS
+Test run 92: PASS
+Test run 93: PASS
+Test run 94: PASS
+Test run 95: PASS
+Test run 96: PASS
+Test run 97: PASS
+Test run 98: PASS
+Test run 99: PASS
+Test run 100: PASS
+Results: 99 passed, 1 failed (1/100 = 1.00% failure rate)
+=== Testing configuration: SystemOpenSSL ===
+Iterations: 100
+Debug: 0
+Using system OpenSSL: 1
+Using master branches: 0
+Environment variables:
+LD_LIBRARY_PATH: /home/ubuntu/repos/wolfProvider/wolfprov-install/lib:/home/ubuntu/repos/wolfProvider/wolfssl-install/lib:/lib/x86_64-linux-gnu
+OPENSSL_MODULES: /home/ubuntu/repos/wolfProvider/wolfprov-install/lib
+OPENSSL_CONF: not set
+WOLFPROV_DEBUG: not set
+Running test 100 times...
+Test run 1: PASS
+Test run 2: PASS
+Test run 3: PASS
+Test run 4: PASS
+Test run 5: PASS
+Test run 6: PASS
+Test run 7: PASS
+Test run 8: PASS
+Test run 9: PASS
+Test run 10: PASS
+Test run 11: PASS
+Test run 12: PASS
+Test run 13: FAIL
+  Found 'Signature not verified' error
+Test run 14: PASS
+Test run 15: PASS
+Test run 16: PASS
+Test run 17: PASS
+Test run 18: PASS
+Test run 19: PASS
+Test run 20: PASS
+Test run 21: PASS
+Test run 22: PASS
+Test run 23: PASS
+Test run 24: PASS
+Test run 25: PASS
+Test run 26: PASS
+Test run 27: PASS
+Test run 28: PASS
+Test run 29: PASS
+Test run 30: PASS
+Test run 31: PASS
+Test run 32: PASS
+Test run 33: PASS
+Test run 34: PASS
+Test run 35: PASS
+Test run 36: FAIL
+  Found 'Signature not verified' error
+Test run 37: PASS
+Test run 38: PASS
+Test run 39: PASS
+Test run 40: PASS
+Test run 41: PASS
+Test run 42: PASS
+Test run 43: PASS
+Test run 44: PASS
+Test run 45: PASS
+Test run 46: PASS
+Test run 47: PASS
+Test run 48: PASS
+Test run 49: PASS
+Test run 50: PASS
+Test run 51: PASS
+Test run 52: PASS
+Test run 53: PASS
+Test run 54: PASS
+Test run 55: PASS
+Test run 56: PASS
+Test run 57: PASS
+Test run 58: PASS
+Test run 59: PASS
+Test run 60: PASS
+Test run 61: PASS
+Test run 62: PASS
+Test run 63: PASS
+Test run 64: PASS
+Test run 65: PASS
+Test run 66: PASS
+Test run 67: PASS
+Test run 68: PASS
+Test run 69: PASS
+Test run 70: PASS
+Test run 71: PASS
+Test run 72: PASS
+Test run 73: PASS
+Test run 74: PASS
+Test run 75: PASS
+Test run 76: PASS
+Test run 77: PASS
+Test run 78: PASS
+Test run 79: PASS
+Test run 80: PASS
+Test run 81: PASS
+Test run 82: PASS
+Test run 83: PASS
+Test run 84: PASS
+Test run 85: PASS
+Test run 86: PASS
+Test run 87: PASS
+Test run 88: PASS
+Test run 89: PASS
+Test run 90: PASS
+Test run 91: PASS
+Test run 92: FAIL
+  Found 'Signature not verified' error
+Test run 93: PASS
+Test run 94: PASS
+Test run 95: PASS
+Test run 96: PASS
+Test run 97: PASS
+Test run 98: PASS
+Test run 99: PASS
+Test run 100: PASS
+Results: 97 passed, 3 failed (3/100 = 3.00% failure rate)
+=== Testing configuration: Provider Switching ===
+Iterations: 100
+Debug: 1
+Running provider switching test with 100 iterations...
+Failed to initialize signing with default (iteration 0)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 1)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 2)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 3)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 4)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 5)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 6)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 7)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 8)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 9)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 10)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 11)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 12)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 13)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 14)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 15)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 16)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 17)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 18)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 19)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 20)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 21)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 22)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 23)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 24)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 25)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 26)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 27)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 28)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 29)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 30)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 31)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 32)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 33)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 34)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 35)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 36)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 37)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 38)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 39)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 40)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 41)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 42)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 43)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 44)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 45)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 46)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 47)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 48)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 49)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 50)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 51)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 52)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 53)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 54)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 55)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 56)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 57)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 58)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 59)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 60)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 61)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 62)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 63)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 64)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 65)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 66)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 67)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 68)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 69)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 70)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 71)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 72)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 73)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 74)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 75)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 76)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 77)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 78)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 79)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 80)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 81)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 82)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 83)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 84)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 85)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 86)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 87)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 88)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 89)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 90)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 91)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 92)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 93)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 94)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 95)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 96)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 97)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with default (iteration 98)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+Failed to initialize signing with libwolfprov (iteration 99)
+OpenSSL error: error:03000096:digital envelope routines::operation not supported for this keytype
+
+Test failed with 100 failures out of 100 iterations
+Testing RSA X931 signature verification with provider switching (100 iterations)
+=== Reproduction Test Summary ===
+Standard configuration: 7 failures
+Debug configuration: 1 failures
+System OpenSSL configuration: 3 failures
+Provider switching test: 1 failures
+Successfully reproduced the RSA X931 signature verification issue!
+The issue occurs most reliably with the following conditions:
+- Standard configuration (no debug, local OpenSSL)
+See /home/ubuntu/repos/wolfProvider/test/reproduce/results/reproduction_results.log for detailed results
