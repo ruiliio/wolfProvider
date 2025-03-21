@@ -3,6 +3,8 @@
 # All paths should be given relative to the root
 
 TEST_EXTENSIONS=.test
+# Configure test log driver to properly capture test output
+TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 TESTS += $(check_PROGRAMS)
 
 check_PROGRAMS += test/unit.test
