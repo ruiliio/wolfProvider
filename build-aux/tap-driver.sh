@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2020 Free Software Foundation, Inc.
+# Copyright (C) 2011-2025 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 # bugs to <bug-automake@gnu.org> or send patches to
 # <automake-patches@gnu.org>.
 
-scriptversion=2020-01-01.04; # UTC
+scriptversion=2025-02-03.04; # UTC
 
 # Make unconditional expansion of undefined variables an error.  This
 # helps a lot in preventing typo-related bugs.
@@ -48,39 +48,48 @@ print_usage ()
 {
   cat <<END
 Usage:
-  tap-driver.sh --test-name=NAME --log-file=PATH --trs-file=PATH
-                [--expect-failure={yes|no}] [--color-tests={yes|no}]
-                [--enable-hard-errors={yes|no}] [--ignore-exit]
-                [--diagnostic-string=STRING] [--merge|--no-merge]
-                [--comments|--no-comments] [--] TEST-COMMAND
-The '--test-name', '--log-file' and '--trs-file' options are mandatory.
+  tap-driver.sh --test-name NAME --log-file PATH --trs-file PATH
+                [--expect-failure {yes|no}] [--color-tests {yes|no}]
+                [--enable-hard-errors {yes|no}] [--ignore-exit]
+                [--diagnostic-string STRING] [--merge|--no-merge]
+                [--stderr-prefix STRING] [--comments|--no-comments]
+                [--] TEST-COMMAND
+The '--test-name', '-log-file' and '--trs-file' options are mandatory.
+
+Report bugs to <bug-automake@gnu.org>.
+GNU Automake home page: <https://www.gnu.org/software/automake/>.
+General help using GNU software: <https://www.gnu.org/gethelp/>.
 END
 }
 
+# TODO: better error handling in option parsing (in particular, ensure
+# TODO: $log_file, $trs_file and $test_name are defined).
 test_name= # Used for reporting.
-log_file=  # Where to save the output of the test script.
+log_file=  # Where to save the result and output of the test script.
 trs_file=  # Where to save the metadata of the test run.
-expect_failure=no
-color_tests=no
-merge=yes
-ignore_exit=no
-comments=no
+expect_failure=0
+color_tests=0
+merge=0
+stderr_prefix=
+ignore_exit=0
+comments=0
 diag_string='#'
 while test $# -gt 0; do
   case $1 in
-  --help) print_usage; exit 0;;
-  --version) echo "$me $scriptversion"; exit 0;;
+  --help) print_usage; exit $?;;
+  --version) echo "$me (GNU Automake) $scriptversion"; exit $?;;
   --test-name) test_name=$2; shift;;
   --log-file) log_file=$2; shift;;
   --trs-file) trs_file=$2; shift;;
   --color-tests) color_tests=$2; shift;;
   --expect-failure) expect_failure=$2; shift;;
-  --enable-hard-errors) shift;;
-  --merge) merge=yes;;
-  --no-merge) merge=no;;
-  --ignore-exit) ignore_exit=yes;;
-  --comments) comments=yes;;
-  --no-comments) comments=no;;
+  --enable-hard-errors) shift;; # No-op.
+  --merge) merge=1;;
+  --no-merge) merge=0;;
+  --stderr-prefix) stderr_prefix=$2; shift;;
+  --ignore-exit) ignore_exit=1;;
+  --comments) comments=1;;
+  --no-comments) comments=0;;
   --diagnostic-string) diag_string=$2; shift;;
   --) shift; break;;
   -*) usage_error "invalid option: '$1'";;
@@ -88,451 +97,647 @@ while test $# -gt 0; do
   shift
 done
 
+# Quadrigraph substitutions for `--stderr-prefix'.  Note that the empty
+# substitution MUST be done last, otherwise `@%@&t@:@' will become `#', not
+# `@%:@'.
+for q_r in '@%:@ #' '@&t@ '; do
+  q=${q_r%% *} # quadrigraph
+  r=${q_r#* } # replacement
+  while true; do
+    case $stderr_prefix in
+    *"$q"*) stderr_prefix=${stderr_prefix%%"$q"*}$r${stderr_prefix#*"$q"};;
+    *) break;;
+    esac
+  done
+done
+
+# Prefixes each line of its stdin with the first argument and writes the result
+# to stdout.  If the final line of stdin is non-empty and does not end with a
+# terminating newline, a newline is added.
+prefix_lines() {
+  # Implementation note: This function is used to prefix the test script's
+  # stderr lines.  Preserving the order of the test script's stdout and stderr
+  # lines is important for debugging, so this function is sensitive to input and
+  # output buffering.  A shell loop is used to prefix the lines instead of
+  # `$AM_TAP_AWK' (which would probably be more efficient) because `mawk'
+  # aggressively buffers its input (except with the `-Winteractive' command-line
+  # option), which would defeat the purpose of the `--merge' option.  `sed' or
+  # `perl' could be used instead of a shell loop, but those would add a
+  # dependency to this script.
+
+  # <https://stackoverflow.com/a/6399568> explains `IFS='.  The `||' check
+  # ensures that stdin's final line is written to stdout even if it is missing a
+  # terminating newline.
+  while IFS= read -r line || test -n "$line"; do
+    # `printf' is preferred over `echo' because `echo' might process backslash
+    # escapes or behave unexpectedly if its argument looks like an option.
+    printf %s\\n "$1$line"
+  done
+}
+
 test $# -gt 0 || usage_error "missing test command"
 
 case $expect_failure in
-  yes|no) ;;
-  *) usage_error "invalid value for '--expect-failure': '$expect_failure'";;
-esac
-
-case $color_tests in
-  yes|no) ;;
-  *) usage_error "invalid value for '--color-tests': '$color_tests'";;
-esac
-
-case $merge in
-  yes|no) ;;
-  *) usage_error "invalid value for '--merge': '$merge'";;
-esac
-
-case $ignore_exit in
-  yes|no) ;;
-  *) usage_error "invalid value for '--ignore-exit': '$ignore_exit'";;
-esac
-
-case $comments in
-  yes|no) ;;
-  *) usage_error "invalid value for '--comments': '$comments'";;
+  yes) expect_failure=1;;
+    *) expect_failure=0;;
 esac
 
 if test $color_tests = yes; then
-  # Keep this in sync with 'lib/am/check.am'.
-  red='[0;31m' # Red.
-  grn='[0;32m' # Green.
-  lgn='[1;32m' # Light green.
-  blu='[1;34m' # Blue.
-  mgn='[0;35m' # Magenta.
-  std='[m'     # No color.
+  init_colors='
+    color_map["red"]="[0;31m" # Red.
+    color_map["grn"]="[0;32m" # Green.
+    color_map["lgn"]="[1;32m" # Light green.
+    color_map["blu"]="[1;34m" # Blue.
+    color_map["mgn"]="[0;35m" # Magenta.
+    color_map["std"]="[m"     # No color.
+    color_for_result["ERROR"] = "mgn"
+    color_for_result["PASS"]  = "grn"
+    color_for_result["XPASS"] = "red"
+    color_for_result["FAIL"]  = "red"
+    color_for_result["XFAIL"] = "lgn"
+    color_for_result["SKIP"]  = "blu"'
 else
-  red= grn= lgn= blu= mgn= std=
+  init_colors=''
 fi
 
-if test $merge = yes; then
-  exec 5>&1
-  exec 6>&2
-  exec > "$log_file"
-  exec 2>&1
-  echo "$me: starting test(s) $test_name"
-fi
-
-# '$*' (rather than '$@') is used to avoid quoting issues with
-# command arguments containing shell metacharacters.
-exec 4>&1
-res=0
-"$@" ${1+"$@"} 4>&- 2>&1 | LC_ALL=C ${AM_TAP_AWK-awk} \
+# :; is there to work around a bug in bash 3.2 (and earlier) which
+# does not always set '$?' properly on redirection failure.
+# See the Autoconf manual for more details.
+:;{
+  (
+    # Ignore common signals (in this subshell only!), to avoid potential
+    # problems with Korn shells.  Some Korn shells are known to propagate
+    # to themselves signals that have killed a child process they were
+    # waiting for; this is done at least for SIGINT (and usually only for
+    # it, in truth).  Without the `trap' below, such a behavior could
+    # cause a premature exit in the current subshell, e.g., in case the
+    # test command it runs gets terminated by a SIGINT.  Thus, the awk
+    # script we are piping into would never seen the exit status it
+    # expects on its last input line (which is displayed below by the
+    # last `echo $?' statement), and would thus die reporting an internal
+    # error.
+    # For more information, see the Autoconf manual and the threads:
+    # <https://lists.gnu.org/archive/html/bug-autoconf/2011-09/msg00004.html>
+    # <http://mail.opensolaris.org/pipermail/ksh93-integration-discuss/2009-February/004121.html>
+    trap : 1 3 2 13 15
+    # Duplicate the stdout fd (which connects to awk's stdin) to fd 4 so that we
+    # can reuse fd 1 for pipelines and command substitutions below.
+    exec 4>&1
+    # Determine where to send the test script's stderr.  Only the test's stderr
+    # should go here; if `exec 2>&$stderr_fd' were run, this script's stderr
+    # (e.g., `set -x' output, if turned on to help with debugging) would mix
+    # with the test script's stderr and go to the log (via `awk', if `--merge'
+    # is enabled), not the terminal.
+    if test $merge -gt 0; then
+      stderr_fd=4  # send stderr to awk, which will copy it to the log
+    else
+      stderr_fd=3  # send stderr directly to the log file
+    fi
+    if test -n "$stderr_prefix"; then
+      # Set to the test script's numeric exit status.
+      status=$(
+        exec 5>&1
+        {
+          {
+            "$@" 5>&-
+            # Capturing the status in a variable then writing the variable value
+            # to awk below may seem like unnecessary steps: Why not just write
+            # the status directly to awk here?  This avoids a race condition:
+            # The awk script below *requires* the final line of its input to be
+            # the test program's exit status.  Writing to fd 4 here would not
+            # provide that guarantee because this `echo' is running concurrently
+            # with `prefix_lines', which is writing to fd 4 if `--merge' is
+            # enabled.  Thus, a prefixed and merged stderr line could be written
+            # to fd 4 /after/ this status is written, which would break the awk
+            # script if the status was written directly to awk here.
+            printf %s\\n "$?" 1>&5
+          } |
+          # Each line of the test program's stdout is read then written
+          # unchanged to stdout.  This is an attempt to subvert buffering so
+          # that stderr and stdout lines are processed in approximately the same
+          # order as written by the test program.  (A less racy approach would
+          # be to use a select or poll loop over both stderr and stdout, but
+          # there is no portable (POSIX) way to do that from a shell script.)
+          #
+          # This also adds a terminating newline to the test program's final
+          # stdout line if missing.
+          while IFS= read -r line || test -n "$line"; do
+            printf %s\\n "$line"
+          done
+        } 2>&1 1>&4 3>&- 4>&- | prefix_lines "$stderr_prefix" 1>&$stderr_fd
+      )
+    else
+      # Avoid using `prefix_lines' for stderr if `$stderr_prefix' is the empty
+      # string.  This ensures that the test program's stderr and stdout are sent
+      # to awk in the order they were written by the test program.  (Only
+      # relevant if `--merge' is enabled.)
+      "$@" 2>&$stderr_fd 3>&- 4>&-
+      status=$?
+    fi
+    printf %s\\n "$status"
+  ) | LC_ALL=C ${AM_TAP_AWK-awk} \
+        -v me="$me" \
+        -v test_script_name="$test_name" \
+        -v log_file="$log_file" \
+        -v trs_file="$trs_file" \
+        -v expect_failure="$expect_failure" \
+        -v merge="$merge" \
+        -v ignore_exit="$ignore_exit" \
+        -v comments="$comments" \
+        -v diag_string="$diag_string" \
 '
 # TODO: the usages of "cat >&3" below could be optimized when using
-#       GNU awk, to avoid the spawning of a shell process.
-#       On the other hand, using "print" unconditionally could be more
-#       problematic, due to filenames containing backslashes.
+#       GNU awk, and/on on systems that supports /dev/fd/.
 
-# Implementation note: in what follows, we avoid playing with $NF (the
-# number of fields in the current record) since $NF is not guaranteed
-# to be set correctly for lines that do not match the default field
-# separator (e.g., lines with less fields, or with more fields, than
-# expected).
+# Implementation note: in what follows, `result_obj` will be an
+# associative array that (partly) simulates a TAP result object
+# from the `TAP::Parser` perl module.
 
-# Defer initialization of variables to the BEGIN block.
+## ----------- ##
+##  FUNCTIONS  ##
+## ----------- ##
+
+function fatal(msg)
+{
+  print me ": " msg | "cat >&2"
+  exit 1
+}
+
+function abort(where)
+{
+  fatal("internal error " where)
+}
+
+# Convert a boolean to a "yes"/"no" string.
+function yn(bool)
+{
+  return bool ? "yes" : "no";
+}
+
+function add_test_result(result)
+{
+  if (!test_results_index)
+    test_results_index = 0
+  test_results_list[test_results_index] = result
+  test_results_index += 1
+  test_results_seen[result] = 1;
+}
+
+# Whether the test script should be re-run by "make recheck".
+function must_recheck()
+{
+  for (k in test_results_seen)
+    if (k != "XFAIL" && k != "PASS" && k != "SKIP")
+      return 1
+  return 0
+}
+
+# Whether the content of the log file associated to this test should
+# be copied into the "global" test-suite.log.
+function copy_in_global_log()
+{
+  for (k in test_results_seen)
+    if (k != "PASS")
+      return 1
+  return 0
+}
+
+function get_global_test_result()
+{
+    if ("ERROR" in test_results_seen)
+      return "ERROR"
+    if ("FAIL" in test_results_seen || "XPASS" in test_results_seen)
+      return "FAIL"
+    all_skipped = 1
+    for (k in test_results_seen)
+      if (k != "SKIP")
+        all_skipped = 0
+    if (all_skipped)
+      return "SKIP"
+    return "PASS";
+}
+
+function stringify_result_obj(result_obj)
+{
+  if (result_obj["is_unplanned"] || result_obj["number"] != testno)
+    return "ERROR"
+
+  if (plan_seen == LATE_PLAN)
+    return "ERROR"
+
+  if (result_obj["directive"] == "TODO")
+    return result_obj["is_ok"] ? "XPASS" : "XFAIL"
+
+  if (result_obj["directive"] == "SKIP")
+    return result_obj["is_ok"] ? "SKIP" : COOKED_FAIL;
+
+  if (length(result_obj["directive"]))
+      abort("in function stringify_result_obj()")
+
+  return result_obj["is_ok"] ? COOKED_PASS : COOKED_FAIL
+}
+
+function decorate_result(result)
+{
+  color_name = color_for_result[result]
+  if (color_name)
+    return color_map[color_name] "" result "" color_map["std"]
+  # If we are not using colorized output, or if we do not know how
+  # to colorize the given result, we should return it unchanged.
+  return result
+}
+
+function report(result, details)
+{
+  if (result ~ /^(X?(PASS|FAIL)|SKIP|ERROR)/)
+    {
+      msg = ": " test_script_name
+      add_test_result(result)
+    }
+  else if (result == "#")
+    {
+      msg = " " test_script_name ":"
+    }
+  else
+    {
+      abort("in function report()")
+    }
+  if (length(details))
+    msg = msg " " details
+  # Output on console might be colorized.
+  print decorate_result(result) msg
+  # Log the result in the log file too, to help debugging (this is
+  # especially true when said result is a TAP error or "Bail out!").
+  print result msg | "cat >&3";
+}
+
+function testsuite_error(error_message)
+{
+  report("ERROR", "- " error_message)
+}
+
+function handle_tap_result()
+{
+  details = result_obj["number"];
+  if (length(result_obj["description"]))
+    details = details " " result_obj["description"]
+
+  if (plan_seen == LATE_PLAN)
+    {
+      details = details " # AFTER LATE PLAN";
+    }
+  else if (result_obj["is_unplanned"])
+    {
+       details = details " # UNPLANNED";
+    }
+  else if (result_obj["number"] != testno)
+    {
+       details = sprintf("%s # OUT-OF-ORDER (expecting %d)",
+                         details, testno);
+    }
+  else if (result_obj["directive"])
+    {
+      details = details " # " result_obj["directive"];
+      if (length(result_obj["explanation"]))
+        details = details " " result_obj["explanation"]
+    }
+
+  report(stringify_result_obj(result_obj), details)
+}
+
+# `skip_reason` should be empty whenever planned > 0.
+function handle_tap_plan(planned, skip_reason)
+{
+  planned += 0 # Avoid getting confused if, say, `planned` is "00"
+  if (length(skip_reason) && planned > 0)
+    abort("in function handle_tap_plan()")
+  if (plan_seen)
+    {
+      # Error, only one plan per stream is acceptable.
+      testsuite_error("multiple test plans")
+      return;
+    }
+  planned_tests = planned
+  # The TAP plan can come before or after *all* the TAP results; we speak
+  # respectively of an "early" or a "late" plan.  If we see the plan line
+  # after at least one TAP result has been seen, assume we have a late
+  # plan; in this case, any further test result seen after the plan will
+  # be flagged as an error.
+  plan_seen = (testno >= 1 ? LATE_PLAN : EARLY_PLAN)
+  # If testno > 0, we have an error ("too many tests run") that will be
+  # automatically dealt with later, so do not worry about it here.  If
+  # $plan_seen is true, we have an error due to a repeated plan, and that
+  # has already been dealt with above.  Otherwise, we have a valid "plan
+  # with SKIP" specification, and should report it as a particular kind
+  # of SKIP result.
+  if (planned == 0 && testno == 0)
+    {
+      if (length(skip_reason))
+        skip_reason = "- "  skip_reason;
+      report("SKIP", skip_reason);
+    }
+}
+
+function extract_tap_comment(line)
+{
+  if (index(line, diag_string) == 1)
+    {
+      # Strip leading `diag_string` from `line`.
+      line = substr(line, length(diag_string) + 1)
+      # And strip any leading and trailing whitespace left.
+      sub("^[ \t]*", "", line)
+      sub("[ \t]*$", "", line)
+      # Return what is left (if any).
+      return line;
+    }
+  return "";
+}
+
+# When this function is called, we know that line is a TAP result line,
+# so that it matches the (perl) RE "^(not )?ok\b".
+function setup_result_obj(line)
+{
+  # Get the result, and remove it from the line.
+  result_obj["is_ok"] = (substr(line, 1, 2) == "ok" ? 1 : 0)
+  sub("^(not )?ok[ \t]*", "", line)
+
+  # If the result has an explicit number, get it and strip it; otherwise,
+  # automatically assign the next test number to it.
+  if (line ~ /^[0-9]+$/ || line ~ /^[0-9]+[^a-zA-Z0-9_]/)
+    {
+      match(line, "^[0-9]+")
+      # The final `+ 0` is to normalize numbers with leading zeros.
+      result_obj["number"] = substr(line, 1, RLENGTH) + 0
+      line = substr(line, RLENGTH + 1)
+    }
+  else
+    {
+      result_obj["number"] = testno
+    }
+
+  if (plan_seen == LATE_PLAN)
+    # No further test results are acceptable after a "late" TAP plan
+    # has been seen.
+    result_obj["is_unplanned"] = 1
+  else if (plan_seen && testno > planned_tests)
+    result_obj["is_unplanned"] = 1
+  else
+    result_obj["is_unplanned"] = 0
+
+  # Strip trailing and leading whitespace.
+  sub("^[ \t]*", "", line)
+  sub("[ \t]*$", "", line)
+
+  # This will have to be corrected if we have a "TODO"/"SKIP" directive.
+  result_obj["description"] = line
+  result_obj["directive"] = ""
+  result_obj["explanation"] = ""
+
+  if (index(line, "#") == 0)
+    return # No possible directive, nothing more to do.
+
+  # Directives are case-insensitive.
+  rx = "[ \t]*#[ \t]*([tT][oO][dD][oO]|[sS][kK][iI][pP])[ \t]*"
+
+  # See whether we have the directive, and if yes, where.
+  pos = match(line, rx "$")
+  if (!pos)
+    pos = match(line, rx "[^a-zA-Z0-9_]")
+
+  # If there was no TAP directive, we have nothing more to do.
+  if (!pos)
+    return
+
+  # Let`s now see if the TAP directive has been escaped.  For example:
+  #  escaped:     ok \# SKIP
+  #  not escaped: ok \\# SKIP
+  #  escaped:     ok \\\\\# SKIP
+  #  not escaped: ok \ # SKIP
+  if (substr(line, pos, 1) == "#")
+    {
+      bslash_count = 0
+      for (i = pos; i > 1 && substr(line, i - 1, 1) == "\\"; i--)
+        bslash_count += 1
+      if (bslash_count % 2)
+        return # Directive was escaped.
+    }
+
+  # Strip the directive and its explanation (if any) from the test
+  # description.
+  result_obj["description"] = substr(line, 1, pos - 1)
+  # Now remove the test description from the line, that has been dealt
+  # with already.
+  line = substr(line, pos)
+  # Strip the directive, and save its value (normalized to upper case).
+  sub("^[ \t]*#[ \t]*", "", line)
+  result_obj["directive"] = toupper(substr(line, 1, 4))
+  line = substr(line, 5)
+  # Now get the explanation for the directive (if any), with leading
+  # and trailing whitespace removed.
+  sub("^[ \t]*", "", line)
+  sub("[ \t]*$", "", line)
+  result_obj["explanation"] = line
+}
+
+function get_test_exit_message(status)
+{
+  if (status == 0)
+    return ""
+  if (status !~ /^[1-9][0-9]*$/)
+    abort("getting exit status: not an integer: " status)
+  if (status < 127)
+    exit_details = ""
+  else if (status == 127)
+    exit_details = " (command not found?)"
+  else if (status >= 128 && status <= 255)
+    exit_details = sprintf(" (terminated by signal %d?)", status - 128)
+  else if (status > 256 && status <= 384)
+    # We used to report an "abnormal termination" here, but some Korn
+    # shells, when a child process die due to signal number n, can leave
+    # in $? an exit status of 256+n instead of the more standard 128+n.
+    # Apparently, both behaviors are allowed by POSIX (2008), so be
+    # prepared to handle them both.  See also Austin Group report ID
+    # 0000051 <http://www.austingroupbugs.net/view.php?id=51>
+    exit_details = sprintf(" (terminated by signal %d?)", status - 256)
+  else
+    # Never seen in practice.
+    exit_details = " (abnormal termination)"
+  return sprintf("exited with status %d%s", status, exit_details)
+}
+
+function write_test_results()
+{
+  print ":global-test-result: " get_global_test_result() > trs_file
+  print ":recheck: "  yn(must_recheck()) > trs_file
+  print ":copy-in-global-log: " yn(copy_in_global_log()) > trs_file
+  for (i = 0; i < test_results_index; i += 1)
+    print ":test-result: " test_results_list[i] > trs_file
+  close(trs_file);
+}
 
 BEGIN {
 
-    # Whether we need to convert to a TAP format.
-    do_tap = 0;
+## ------- ##
+##  SETUP  ##
+## ------- ##
 
-    # Whether we are still reading the header of a TAP stream.
-    in_header = 0;
+'"$init_colors"'
 
-    # Whether the TAP plan has been seen or not.
-    plan_seen = 0;
+# Properly initialized once the TAP plan is seen.
+planned_tests = 0
 
-    # Whether the plan has been seen before any test line.
-    plan_before_any_test = 0;
+COOKED_PASS = expect_failure ? "XPASS": "PASS";
+COOKED_FAIL = expect_failure ? "XFAIL": "FAIL";
 
-    # Whether a "Bail out!" directive has been seen.
-    bail_out = 0;
+# Enumeration-like constants to remember which kind of plan (if any)
+# has been seen.  It is important that NO_PLAN evaluates "false" as
+# a boolean.
+NO_PLAN = 0
+EARLY_PLAN = 1
+LATE_PLAN = 2
 
-    # Whether the test plan is a "SKIP" plan.
-    skip_all = 0;
+testno = 0     # Number of test results seen so far.
+bailed_out = 0 # Whether a "Bail out!" directive has been seen.
 
-    # Number of test results seen.  This does not include skipped tests.
-    test_results_count = 0;
+# Whether the TAP plan has been seen or not, and if yes, which kind
+# it is ("early" is seen before any test result, "late" otherwise).
+plan_seen = NO_PLAN
 
-    # Number of test results expected according to the plan.
-    test_results_expected = 0;
+## --------- ##
+##  PARSING  ##
+## --------- ##
 
-    # Number of test lines seen.  This includes skipped tests.
-    test_lines_count = 0;
+is_first_read = 1
 
-    # Whether any test result has been seen already.
-    any_test_seen = 0;
+while (1)
+  {
+    # Involutions required so that we are able to read the exit status
+    # from the last input line.
+    st = getline
+    if (st < 0) # I/O error.
+      fatal("I/O error while reading from input stream")
+    else if (st == 0) # End-of-input
+      {
+        if (is_first_read)
+          abort("in input loop: only one input line")
+        break
+      }
+    if (is_first_read)
+      {
+        is_first_read = 0
+        nextline = $0
+        continue
+      }
+    else
+      {
+        curline = nextline
+        nextline = $0
+        $0 = curline
+      }
+    # Copy any input line verbatim into the log file.
+    print | "cat >&3"
+    # Parsing of TAP input should stop after a "Bail out!" directive.
+    if (bailed_out)
+      continue
 
-    # Whether any test has been skipped already.
-    any_skip_seen = 0;
+    # TAP test result.
+    if ($0 ~ /^(not )?ok$/ || $0 ~ /^(not )?ok[^a-zA-Z0-9_]/)
+      {
+        testno += 1
+        setup_result_obj($0)
+        handle_tap_result()
+      }
+    # TAP plan (normal or "SKIP" without explanation).
+    else if ($0 ~ /^1\.\.[0-9]+[ \t]*$/)
+      {
+        # The next two lines will put the number of planned tests in $0.
+        sub("^1\\.\\.", "")
+        sub("[^0-9]*$", "")
+        handle_tap_plan($0, "")
+        continue
+      }
+    # TAP "SKIP" plan, with an explanation.
+    else if ($0 ~ /^1\.\.0+[ \t]*#/)
+      {
+        # The next lines will put the skip explanation in $0, stripping
+        # any leading and trailing whitespace.  This is a little more
+        # tricky in truth, since we want to also strip a potential leading
+        # "SKIP" string from the message.
+        sub("^[^#]*#[ \t]*(SKIP[: \t][ \t]*)?", "")
+        sub("[ \t]*$", "");
+        handle_tap_plan(0, $0)
+      }
+    # "Bail out!" magic.
+    # Older versions of prove and TAP::Harness (e.g., 3.17) did not
+    # recognize a "Bail out!" directive when preceded by leading
+    # whitespace, but more modern versions (e.g., 3.23) do.  So we
+    # emulate the latter, "more modern" behavior.
+    else if ($0 ~ /^[ \t]*Bail out!/)
+      {
+        bailed_out = 1
+        # Get the bailout message (if any), with leading and trailing
+        # whitespace stripped.  The message remains stored in `$0`.
+        sub("^[ \t]*Bail out![ \t]*", "");
+        sub("[ \t]*$", "");
+        # Format the error message for the
+        bailout_message = "Bail out!"
+        if (length($0))
+          bailout_message = bailout_message " " $0
+        testsuite_error(bailout_message)
+      }
+    # Maybe we have to look for diagnostic comments too.
+    else if (comments != 0)
+      {
+        comment = extract_tap_comment($0);
+        if (length(comment))
+          report("#", comment);
+      }
+  }
 
-    # Whether any test has been failed already.
-    any_fail_seen = 0;
+## -------- ##
+##  FINISH  ##
+## -------- ##
 
-    # Whether the TAP output contained any "TODO"/"SKIP" directive.
-    any_todo_or_skip_seen = 0;
+# A "Bail out!" directive should cause us to ignore any following TAP
+# error, as well as a non-zero exit status from the TAP producer.
+if (!bailed_out)
+  {
+    if (!plan_seen)
+      {
+        testsuite_error("missing test plan")
+      }
+    else if (planned_tests != testno)
+      {
+        bad_amount = testno > planned_tests ? "many" : "few"
+        testsuite_error(sprintf("too %s tests run (expected %d, got %d)",
+                                bad_amount, planned_tests, testno))
+      }
+    if (!ignore_exit)
+      {
+        # Fetch exit status from the last line.
+        exit_message = get_test_exit_message(nextline)
+        if (exit_message)
+          testsuite_error(exit_message)
+      }
+  }
 
-    # Whether the "No tests were run" message should be printed.
-    no_tests_run = 0;
+write_test_results()
 
-    # Whether the "No tests were run" message should be printed.
-    no_results = 0;
+exit 0
 
-    # Whether we should ignore the exit code of the test script.
-    ignore_exit_code = '"$ignore_exit"';
+} # End of "BEGIN" block.
+'
+} 3>"$log_file"
 
-    # Process the command line.
-    test_name = "'"$test_name"'";
-    if (test_name == "")
-      test_name = "unnamed test";
-    diag_prefix = "'"$diag_string"'";
-    diag_len = length(diag_prefix);
-    comments = '"$comments"';
-}
+test $? -eq 0 || fatal "I/O or internal error"
 
-# 'close enough' matching for TAP headers.
-# See <http://testanything.org/tap-specification.html> for more details
-# on the TAP format.
-/^1\.\.[0-9]+[ \t]*$/ {
-    # The line matches the form "1..$testcount".
-    if (plan_seen) {
-        print "ERROR: More than one test plan seen:";
-        print "ERROR:   first: \"" plan_line "\"";
-        print "ERROR:   later: \"" $0 "\"";
-        err = 1;
-        exit 1;
-    }
-    plan_line = $0;
-    plan_seen = 1;
-    plan_before_any_test = ! any_test_seen;
-    sub(/[ \t]*$/, "", $0);
-    test_results_expected = substr($0, 4) + 0;
-    if (test_results_expected == 0) {
-        no_tests_run = 1;
-        if ($0 ~ /^1\.\.0+[ \t]+#[ \t]+[Ss][Kk][Ii][Pp]/) {
-            # A SKIP plan, of the form "1..0 # SKIP" or similar.
-            skip_all = 1;
-            no_tests_run = 0;
-        }
-    }
-    next;
-}
-
-/^Bail out!/ {
-    # Bail out (as per the TAP specification).
-    bail_out = 1;
-    if (length($0) > 10)
-        print substr($0, 11);
-    err = 1;
-    exit 1;
-}
-
-/^not[ \t]+ok/ {
-    # The line is a failure test header.
-    any_test_seen = 1;
-    test_lines_count += 1;
-    if ($0 ~ /^not[ \t]+ok[ \t]+[0-9]+[ \t]*$/ \
-        || $0 ~ /^not[ \t]+ok[ \t]*$/) {
-        # The line matches the form "not ok $testnum" or "not ok".
-        test_results_count += 1;
-        any_fail_seen = 1;
-        report_failure(test_name, test_lines_count);
-    }
-    else if ($0 ~ /^not[ \t]+ok[ \t]+[0-9]+[ \t]+#[ \t]+[Ss][Kk][Ii][Pp]/ \
-             || $0 ~ /^not[ \t]+ok[ \t]+#[ \t]+[Ss][Kk][Ii][Pp]/) {
-        # The line matches the form "not ok $testnum # SKIP" or
-        # "not ok # SKIP".
-        any_skip_seen = 1;
-        any_todo_or_skip_seen = 1;
-    }
-    else if ($0 ~ /^not[ \t]+ok[ \t]+[0-9]+[ \t]+#[ \t]+[Tt][Oo][Dd][Oo]/ \
-             || $0 ~ /^not[ \t]+ok[ \t]+#[ \t]+[Tt][Oo][Dd][Oo]/) {
-        # The line matches the form "not ok $testnum # TODO" or
-        # "not ok # TODO".
-        any_todo_or_skip_seen = 1;
-    }
-    else {
-        # The line is a failure test header that does not match any of
-        # the above more specific formats.
-        test_results_count += 1;
-        any_fail_seen = 1;
-        report_failure(test_name, test_lines_count);
-    }
-    next;
-}
-
-/^ok/ {
-    # The line is a success test header.
-    any_test_seen = 1;
-    test_lines_count += 1;
-    if ($0 ~ /^ok[ \t]+[0-9]+[ \t]*$/ \
-        || $0 ~ /^ok[ \t]*$/) {
-        # The line matches the form "ok $testnum" or "ok".
-        test_results_count += 1;
-    }
-    else if ($0 ~ /^ok[ \t]+[0-9]+[ \t]+#[ \t]+[Ss][Kk][Ii][Pp]/ \
-             || $0 ~ /^ok[ \t]+#[ \t]+[Ss][Kk][Ii][Pp]/) {
-        # The line matches the form "ok $testnum # SKIP" or "ok # SKIP".
-        any_skip_seen = 1;
-        any_todo_or_skip_seen = 1;
-    }
-    else if ($0 ~ /^ok[ \t]+[0-9]+[ \t]+#[ \t]+[Tt][Oo][Dd][Oo]/ \
-             || $0 ~ /^ok[ \t]+#[ \t]+[Tt][Oo][Dd][Oo]/) {
-        # The line matches the form "ok $testnum # TODO" or "ok # TODO".
-        any_todo_or_skip_seen = 1;
-    }
-    else {
-        # The line is a success test header that does not match any of
-        # the above more specific formats.
-        test_results_count += 1;
-    }
-    next;
-}
-
-# TAP headers were not found, so we are not looking at TAP format.
-# Assume the first line of output is the first test result.
-! do_tap && ! in_header {
-    # If no TAP headers have been seen, and we are not already reading
-    # the header of a TAP stream, assume that the input is not in the
-    # TAP format, and convert it to a more-or-less equivalent TAP format.
-    do_tap = 1;
-    print "1..1";
-    any_test_seen = 1;
-    test_lines_count += 1;
-    test_results_count += 1;
-    test_results_expected = 1;
-    if ($0 ~ /^(ERROR|FAIL):/) {
-        # The line matches the form "ERROR: $message" or "FAIL: $message".
-        any_fail_seen = 1;
-        report_failure(test_name, test_lines_count);
-        print "not ok 1 - " test_name;
-    }
-    else {
-        # The line is not an error or failure message.
-        print "ok 1 - " test_name;
-    }
-    next;
-}
-
-# We are still reading the header of a TAP stream.
-in_header {
-    if ($0 ~ /^[ \t]*#/) {
-        # The line is a TAP comment.
-        if (comments)
-            print;
-    }
-    else if ($0 ~ /^[ \t]*$/) {
-        # The line is empty.
-        if (comments)
-            print;
-    }
-    else {
-        # The line is not a TAP comment, nor is it empty.  We have reached
-        # the end of the header.
-        in_header = 0;
-    }
-    next;
-}
-
-# We are not in the header of a TAP stream.
-{
-    if (do_tap) {
-        # We are converting the output to TAP format.
-        if ($0 ~ /^(ERROR|FAIL):/ \
-            || ( any_fail_seen && $0 ~ /^[ \t]/ )) {
-            # The line is an error or failure message, or it is a continuation
-            # of a previous error or failure message.
-            report_failure(test_name, test_lines_count);
-        }
-    }
-    else {
-        # We are copying the TAP stream.
-        if ($0 ~ /^[ \t]*#/) {
-            # The line is a TAP comment.
-            if (comments)
-                print;
-        }
-        else {
-            # The line is not a TAP comment.
-            print;
-        }
-    }
-}
-
-END {
-    if (bailout_seen)
-        exit 1;
-
-    if (plan_seen && test_results_count != test_results_expected) {
-        # Handle the case where the test plan is not fulfilled.
-        if (test_results_seen < test_results_expected) {
-            if (any_fail_seen) {
-                # Some tests have failed, others have been missed.  Assume
-                # the missed tests would have been successes.
-                msg = ""; 
-            }
-            else {
-                # Some tests have been missed, but all the run tests have
-                # succeeded.
-                msg = ""; 
-            }
-        }
-        else {
-            # More tests have been run than stated in the plan.
-            msg = ""; 
-        }
-        if (msg != "")
-            print msg;
-    }
-    else if (! plan_seen && ! bail_out) {
-        # Handle the case where there is no valid test plan.
-        if (any_test_seen) {
-            # Some test lines have been seen.
-            if (any_skip_seen) {
-                # Some tests have been skipped.  Assume the test count is
-                # correct.
-                msg = ""; 
-            }
-            else if (any_fail_seen) {
-                # Some tests have failed.  Assume the test count is correct.
-                msg = ""; 
-            }
-            else {
-                # All tests have passed.  Assume the test count is correct.
-                msg = ""; 
-            }
-        }
-        else {
-            # No tests have been seen at all.
-            msg = "ERROR: No tests were run!";
-            no_tests_run = 1;
-            no_results = 1;
-        }
-        if (msg != "")
-            print msg;
-    }
-
-    if (no_tests_run) {
-        # Handle the case where no tests have been run.
-        if (no_results) {
-            # No useful results have been seen.
-            if (! ignore_exit_code)
-                exit 1;
-        }
-        else if (skip_all) {
-            # The test plan indicates that all tests have been skipped.
-            exit 0;
-        }
-        else {
-            # No tests have been run, but we expected some to be run.
-            if (! ignore_exit_code)
-                exit 1;
-        }
-    }
-    else if (any_fail_seen) {
-        # Some tests have failed.
-        if (! ignore_exit_code)
-            exit 1;
-    }
-    else if (test_results_count < test_results_expected && ! any_todo_or_skip_seen) {
-        # Some tests have been missed, and no tests have been skipped or
-        # are TODO.
-        if (! ignore_exit_code)
-            exit 1;
-    }
-    else {
-        # All is well.
-        exit 0;
-    }
-}
-
-function report_failure(test_name, test_number) {
-    # We have a failure to report.
-    if (! bailout_seen) {
-        # We have not already bailed out.
-        if (! any_fail_seen) {
-            # This is the first failure.
-            print "Bail out! " test_name " failed test #" test_number ":";
-            bailout_seen = 1;
-        }
-    }
-}
-' >&3
-
-# Save exit code in case we get interrupted.
-st=$?
-
-if test $merge = yes; then
-  # Restore stdout and stderr.
-  exec 1>&5 2>&6
-  # Restore the original values of stdout and stderr.
-  exec 5>&- 6>&-
-fi
-
-# If we've been interrupted, let's really quit.
-# And use the correct exit code, from the test script.
-test -n "$INT_TRAP" && exit $st
-
-# Catch the exit code from the test script.
-if test $st -eq 0; then
-  if test $ignore_exit = no && test -s "$log_file"; then
-    echo "$me: $test_name exited successfully but its output contains the word 'ERROR'" >&2
-    st=1
-  fi
-else
-  if test $ignore_exit = yes; then
-    echo "$me: \$ignore_exit = yes, we pretend that $test_name passed" >&2
-    st=0
-  fi
-fi
-
-if test $st -eq 0; then
-  # Preserve the count of successes.
-  if test $expect_failure = yes; then
-    echo "${red}XPASS${std}: $test_name" | cat >&2
-    st=1
-  else
-    echo "${grn}PASS${std}: $test_name" | cat >&2
-  fi
-else
-  # Preserve the count of failures.
-  if test $expect_failure = yes; then
-    echo "${lgn}XFAIL${std}: $test_name" | cat >&2
-    st=0
-  else
-    echo "${red}FAIL${std}: $test_name" | cat >&2
-  fi
-fi
-
-# Report the test outcome.
-echo "$st" > "$trs_file"
-
-# Remove the log file if there are no test failures.
-if test $st -eq 0; then
-  test -f "$log_file" && rm -f "$log_file"
-fi
-
-exit $st
+# Local Variables:
+# mode: shell-script
+# sh-indentation: 2
+# eval: (add-hook 'before-save-hook 'time-stamp nil t)
+# time-stamp-line-limit: 50
+# time-stamp-start: "scriptversion="
+# time-stamp-format: "%:y-%02m-%02d.%02H"
+# time-stamp-time-zone: "UTC0"
+# time-stamp-end: "; # UTC"
+# End:
