@@ -4,7 +4,6 @@
 
 TEST_EXTENSIONS=.test
 # Use the default test driver but ensure output is captured to test-suite.log
-AM_TEST_LOG_DRIVER_FLAGS = --preserve-environment
 # Ensure test output is captured to test-suite.log
 LOG_COMPILER = sh -c 'tee -a test-suite.log'
 TESTS += $(check_PROGRAMS)
