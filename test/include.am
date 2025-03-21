@@ -3,8 +3,11 @@
 # All paths should be given relative to the root
 
 TEST_EXTENSIONS=.test
-# Use a custom test log driver for unit.test to capture "###### TESTSUITE SUCCESS" message
-TEST_LOG_DRIVER = $(top_srcdir)/test/unit.test.log-driver
+# Use a custom test log driver to capture test output to test-suite.log
+TEST_LOG_DRIVER = $(top_srcdir)/build-aux/test-driver
+AM_TEST_LOG_DRIVER_FLAGS = --preserve-environment
+# Ensure test output is captured to test-suite.log
+LOG_COMPILER = sh -c 'tee -a test-suite.log'
 TESTS += $(check_PROGRAMS)
 
 check_PROGRAMS += test/unit.test
@@ -32,3 +35,4 @@ test_unit_test_SOURCES = \
 	test/unit.c
 test_unit_test_LDADD = libwolfprov.la
 noinst_HEADERS += test/unit.h
+
