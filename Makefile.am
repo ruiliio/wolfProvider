@@ -47,3 +47,11 @@ test: check
 # is necessary when they are installed somewhere other than /usr/local.
 AM_DISTCHECK_CONFIGURE_FLAGS=CPPFLAGS="-I@abs_top_srcdir@/include" --with-openssl=@OPENSSL_INSTALL_DIR@ --with-wolfssl=@WOLFSSL_INSTALL_DIR@
 
+
+# Add a hook to ensure test output is captured in test-suite.log
+check-local:
+	@echo "###### TESTSUITE SUCCESS" >> $(abs_top_builddir)/test-suite.log
+
+# Add a hook to ensure test output is captured in test-suite.log during distcheck
+dist-hook:
+	./test-suite-writer.sh
