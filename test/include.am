@@ -36,3 +36,6 @@ noinst_HEADERS += test/unit.h
 
 # Include minimal test
 include test/minimal.am
+
+# Include simple test
+include test/simple_test.am
