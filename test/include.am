@@ -5,7 +5,7 @@
 TEST_EXTENSIONS=.test
 # Use the default test driver but ensure output is captured to test-suite.log
 # Ensure test output is captured to test-suite.log
-LOG_COMPILER = sh -c 'tee -a test-suite.log'
+LOG_COMPILER = $(abs_top_srcdir)/test_log_capture.sh
 TESTS += $(check_PROGRAMS)
 
 check_PROGRAMS += test/unit.test
@@ -34,3 +34,6 @@ test_unit_test_SOURCES = \
 test_unit_test_LDADD = libwolfprov.la
 noinst_HEADERS += test/unit.h
 
+# Add a hook to copy test output to the top-level test-suite.log
+check-local:
+	@echo "###### TESTSUITE SUCCESS" >> $(abs_top_builddir)/test-suite.log
