@@ -46,8 +46,12 @@ TOP_LOG="$TOP_DIR/test-suite.log"
 
 # Run the test and capture its output to both the log file and the top-level test-suite.log
 echo "Running test: $test_name" >>"$log_file"
-echo "Running test: $test_name" >> "$TOP_LOG" 2>/dev/null || true
-"$@" 2>&1 | tee >(cat >> "$TOP_LOG" 2>/dev/null || true) >>"$log_file"
+# Try to write to top-level log, but don't fail if we can't
+{ echo "Running test: $test_name" >> "$TOP_LOG"; } 2>/dev/null || true
+# Run the test and capture output to log file
+"$@" 2>&1 >>"$log_file"
+# Try to append test output to top-level log, but don't fail if we can't
+{ cat "$log_file" >> "$TOP_LOG"; } 2>/dev/null || true
 estatus=$?
 
 # Add success message to the log
