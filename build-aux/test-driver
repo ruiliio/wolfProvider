@@ -45,15 +45,18 @@ TOP_LOG="$TOP_DIR/test-suite.log"
 : >"$log_file"
 
 # Run the test and capture its output to both the log file and the top-level test-suite.log
-echo "Running test: $test_name" | tee -a "$TOP_LOG" >>"$log_file"
-"$@" 2>&1 | tee -a "$TOP_LOG" >>"$log_file"
+echo "Running test: $test_name" >>"$log_file"
+echo "Running test: $test_name" >> "$TOP_LOG" 2>/dev/null || true
+"$@" 2>&1 | tee >(cat >> "$TOP_LOG" 2>/dev/null || true) >>"$log_file"
 estatus=$?
 
 # Add success message to the log
 if [ $estatus -eq 0 ]; then
-  echo "###### TESTSUITE SUCCESS" | tee -a "$TOP_LOG" >>"$log_file"
+  echo "###### TESTSUITE SUCCESS" >>"$log_file"
+  echo "###### TESTSUITE SUCCESS" >> "$TOP_LOG" 2>/dev/null || true
 else
-  echo "###### TESTSUITE FAILURE (status: $estatus)" | tee -a "$TOP_LOG" >>"$log_file"
+  echo "###### TESTSUITE FAILURE (status: $estatus)" >>"$log_file"
+  echo "###### TESTSUITE FAILURE (status: $estatus)" >> "$TOP_LOG" 2>/dev/null || true
 fi
 
 # Record the test result
