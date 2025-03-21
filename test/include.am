@@ -33,3 +33,6 @@ test_unit_test_SOURCES = \
 test_unit_test_LDADD = libwolfprov.la
 noinst_HEADERS += test/unit.h
 
+
+# Include minimal test
+include test/minimal.am
