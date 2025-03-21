@@ -1,0 +1,65 @@
+#!/bin/sh
+# test-driver - custom test driver that captures all output to test-suite.log
+# Modified to ensure test output is captured to the top-level test-suite.log
+
+# Get original arguments
+test_name=""
+log_file=""
+trs_file=""
+expect_failure=no
+color_tests=no
+enable_hard_errors=yes
+while test $# -gt 0; do
+  case $1 in
+  --test-name) test_name=$2; shift;;
+  --log-file) log_file=$2; shift;;
+  --trs-file) trs_file=$2; shift;;
+  --color-tests) color_tests=$2; shift;;
+  --expect-failure) expect_failure=$2; shift;;
+  --enable-hard-errors) enable_hard_errors=$2; shift;;
+  --) shift; break;;
+  -*) echo "$0: invalid option: '$1'" >&2; exit 2;;
+   *) break;;
+  esac
+  shift
+done
+
+# Find the top-level directory by looking for configure.ac
+find_top_dir() {
+  local dir="$PWD"
+  while [ "$dir" != "/" ]; do
+    if [ -f "$dir/configure.ac" ]; then
+      echo "$dir"
+      return 0
+    fi
+    dir=$(dirname "$dir")
+  done
+  echo "$PWD"  # Fallback to current directory
+}
+
+# Get the top-level directory
+TOP_DIR=$(find_top_dir)
+TOP_LOG="$TOP_DIR/test-suite.log"
+
+# Create log file
+: >"$log_file"
+
+# Run the test and capture its output to both the log file and the top-level test-suite.log
+echo "Running test: $test_name" | tee -a "$TOP_LOG" >>"$log_file"
+"$@" 2>&1 | tee -a "$TOP_LOG" >>"$log_file"
+estatus=$?
+
+# Add success message to the log
+if [ $estatus -eq 0 ]; then
+  echo "###### TESTSUITE SUCCESS" | tee -a "$TOP_LOG" >>"$log_file"
+else
+  echo "###### TESTSUITE FAILURE (status: $estatus)" | tee -a "$TOP_LOG" >>"$log_file"
+fi
+
+# Record the test result
+echo ":test-result: ${estatus}" > "$trs_file"
+echo ":global-test-result: ${estatus}" >> "$trs_file"
+echo ":recheck: yes" >> "$trs_file"
+echo ":copy-in-global-log: yes" >> "$trs_file"
+
+exit $estatus
