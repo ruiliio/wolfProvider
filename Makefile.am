@@ -52,3 +52,9 @@ AM_DISTCHECK_CONFIGURE_FLAGS=CPPFLAGS="-I@abs_top_srcdir@/include" --with-openss
 check-local:
 	@echo "###### TESTSUITE SUCCESS" >> $(abs_top_builddir)/test-suite.log
 
+# Add a hook to copy the test-suite.log file from distcheck to the top-level directory
+dist-hook:
+	@if test -f "$(abs_top_builddir)/test-suite.log"; then \
+		cat "$(abs_top_builddir)/test-suite.log" >> "$(top_builddir)/../test-suite.log" 2>/dev/null || true; \
+	fi
+

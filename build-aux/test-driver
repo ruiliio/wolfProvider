@@ -40,27 +40,43 @@ find_top_dir() {
 # Get the top-level directory
 TOP_DIR=$(find_top_dir)
 TOP_LOG="$TOP_DIR/test-suite.log"
+REPO_ROOT=$(cd "$TOP_DIR" && cd .. && pwd)
+ROOT_LOG="$REPO_ROOT/test-suite.log"
 
 # Create log file
 : >"$log_file"
 
 # Run the test and capture its output to both the log file and the top-level test-suite.log
 echo "Running test: $test_name" >>"$log_file"
-# Try to write to top-level log, but don't fail if we can't
+
+# Try to write to all possible log locations, but don't fail if we can't
 { echo "Running test: $test_name" >> "$TOP_LOG"; } 2>/dev/null || true
-# Run the test and capture output to log file
-"$@" 2>&1 >>"$log_file"
-# Try to append test output to top-level log, but don't fail if we can't
-{ cat "$log_file" >> "$TOP_LOG"; } 2>/dev/null || true
+{ echo "Running test: $test_name" >> "$ROOT_LOG"; } 2>/dev/null || true
+
+# Create a temporary file for test output
+TEMP_LOG=$(mktemp)
+
+# Run the test and capture output to temp file
+"$@" 2>&1 > "$TEMP_LOG"
 estatus=$?
+
+# Append temp file to all logs
+cat "$TEMP_LOG" >> "$log_file"
+{ cat "$TEMP_LOG" >> "$TOP_LOG"; } 2>/dev/null || true
+{ cat "$TEMP_LOG" >> "$ROOT_LOG"; } 2>/dev/null || true
+
+# Clean up temp file
+rm -f "$TEMP_LOG"
 
 # Add success message to the log
 if [ $estatus -eq 0 ]; then
   echo "###### TESTSUITE SUCCESS" >>"$log_file"
-  echo "###### TESTSUITE SUCCESS" >> "$TOP_LOG" 2>/dev/null || true
+  { echo "###### TESTSUITE SUCCESS" >> "$TOP_LOG"; } 2>/dev/null || true
+  { echo "###### TESTSUITE SUCCESS" >> "$ROOT_LOG"; } 2>/dev/null || true
 else
   echo "###### TESTSUITE FAILURE (status: $estatus)" >>"$log_file"
-  echo "###### TESTSUITE FAILURE (status: $estatus)" >> "$TOP_LOG" 2>/dev/null || true
+  { echo "###### TESTSUITE FAILURE (status: $estatus)" >> "$TOP_LOG"; } 2>/dev/null || true
+  { echo "###### TESTSUITE FAILURE (status: $estatus)" >> "$ROOT_LOG"; } 2>/dev/null || true
 fi
 
 # Record the test result
