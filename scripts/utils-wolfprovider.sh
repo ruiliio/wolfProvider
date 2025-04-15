@@ -24,9 +24,6 @@ source ${SCRIPT_DIR}/utils-wolfssl.sh
 
 WOLFPROV_SOURCE_DIR=${SCRIPT_DIR}/..
 WOLFPROV_INSTALL_DIR=${SCRIPT_DIR}/../wolfprov-install
-WOLFPROV_CONFIG_OPTS=${WOLFPROV_CONFIG_OPTS:-"--with-openssl=${OPENSSL_INSTALL_DIR} --with-wolfssl=${WOLFSSL_INSTALL_DIR} --prefix=${WOLFPROV_INSTALL_DIR}"}
-WOLFPROV_CONFIG_CFLAGS=${WOLFPROV_CONFIG_CFLAGS:-''}
-
 if [ "$WOLFSSL_ISFIPS" -eq "1" ] || [ -n "$WOLFSSL_FIPS_BUNDLE" ]; then
     WOLFPROV_CONFIG=${WOLFPROV_CONFIG:-"$WOLFPROV_SOURCE_DIR/provider-fips.conf"}
 else
@@ -52,14 +49,13 @@ install_wolfprov() {
         if [ ! -e "${WOLFPROV_SOURCE_DIR}/configure" ]; then
             ./autogen.sh >>$LOG_FILE 2>&1
         fi
-
         if [ "$WOLFPROV_DEBUG" = "1" ]; then
-            WOLFPROV_CONFIG_OPTS+=" --enable-debug"
+            ./configure --with-openssl=${OPENSSL_INSTALL_DIR} --with-wolfssl=${WOLFSSL_INSTALL_DIR} --prefix=${WOLFPROV_INSTALL_DIR} --enable-debug >>$LOG_FILE 2>&1
+            RET=$?
+        else
+            ./configure --with-openssl=${OPENSSL_INSTALL_DIR} --with-wolfssl=${WOLFSSL_INSTALL_DIR} --prefix=${WOLFPROV_INSTALL_DIR} >>$LOG_FILE 2>&1
+            RET=$?
         fi
-
-        ./configure ${WOLFPROV_CONFIG_OPTS} CFLAGS="${WOLFPROV_CONFIG_CFLAGS}" >>$LOG_FILE 2>&1
-        RET=$?
-
         if [ $RET != 0 ]; then
             printf "\n\n...\n"
             tail -n 40 $LOG_FILE
