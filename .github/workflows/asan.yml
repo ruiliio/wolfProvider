@@ -1,0 +1,37 @@
+name: wolfProvider asan Test
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "*" ]
+    
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains make check
+  make_check:
+    name: asan test
+    runs-on: ubuntu-latest  # The type of runner that the job will run on
+    
+    # This should be a safe limit for the tests to run.
+    timeout-minutes: 10
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout wolfProvider
+
+      - name: Test wolfProvider
+        run: |
+          WOLFPROV_CONFIG_CFLAGS=-static-libasan -fsanitize=address,undefined -g ./scripts/build-wolfprovider.sh
+          
+      - name: Print errors 
+        if: ${{ failure() }}
+        run: |
+          if [ -f test-suite.log ] ; then
+            cat test-suite.log
+          fi
