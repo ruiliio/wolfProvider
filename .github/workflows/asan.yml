@@ -24,7 +24,7 @@ jobs:
 
       - name: Test wolfProvider
         run: |
-          CFLAGS="-static-libasan -fsanitize=address,undefined -g" ./scripts/build-wolfprovider.sh
+          WOLFPROV_CONFIG_CFLAGS="-static-libasan -fsanitize=address,undefined -g" ./scripts/build-wolfprovider.sh
           
       - name: Print errors 
         if: ${{ failure() }}
