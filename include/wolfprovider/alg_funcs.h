@@ -282,6 +282,10 @@ extern const OSSL_DISPATCH wp_aes256wrap_functions[];
 extern const OSSL_DISPATCH wp_aes192wrap_functions[];
 extern const OSSL_DISPATCH wp_aes128wrap_functions[];
 
+extern const OSSL_DISPATCH wp_aes256wrappad_functions[];
+extern const OSSL_DISPATCH wp_aes192wrappad_functions[];
+extern const OSSL_DISPATCH wp_aes128wrappad_functions[];
+
 extern const OSSL_DISPATCH wp_des3cbc_functions[];
 
 /* MAC implementations. */
