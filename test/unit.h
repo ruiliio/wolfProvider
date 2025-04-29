@@ -193,6 +193,14 @@ int test_aes128_ccm_tls(void *data);
 
 #endif /* WP_HAVE_AESCCM */
 
+#ifdef HAVE_AES_KEYWRAP
+int test_wrap(void *data);
+#endif
+
+#ifdef HAVE_AES_KEYWRAPPAD
+int test_wrap_pad(void *data);
+#endif
+
 #ifdef WP_HAVE_RANDOM
 
 int test_random(void *data);

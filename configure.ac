@@ -112,6 +112,17 @@ AS_IF([ test "x$ENABLED_SINGLETHREADED" = "xno" ],[
 
 
 
+# AES KEY WRAP PAD support
+AC_ARG_ENABLE([keywrappad],
+    [AS_HELP_STRING([--enable-keywrappad],[Enable AES key wrap pad (default: enabled).])],
+    [ ENABLED_AES_KEY_WRAP_PAD=$enableval ],
+    [ ENABLED_AES_KEY_WRAP_PAD=yes ]
+    )
+
+if test "$ENABLED_AES_KEYWRAPPAD" != "yes"
+then
+    AM_CFLAGS="$AM_CFLAGS -DHAVE_AES_KEYWRAPPAD"
+fi
 
 
 AX_HARDEN_CC_COMPILER_FLAGS

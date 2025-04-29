@@ -386,7 +386,10 @@ int wp_aes_wrap_pad(wp_AesWrapPadCtx *ctx, unsigned char* iv, unsigned char *out
         *outLen = 16;  /* AIV + padded input */  
                      
     } else {
-        ret = wc_AesKeyWrap_ex(&ctx->aes, in, (word32)padded_len, out, outSz, aiv);
+        memmove(out, in, inLen);
+        memset(out + inLen, 0, padding_len); /* Section 4.1 step 1 */
+            
+        ret = wc_AesKeyWrap_ex(&ctx->aes, out, (word32)padded_len, out, outSz, aiv);
         if (ret <= 0 ){
             ok = 0;
         }
@@ -460,11 +463,10 @@ int wp_aes_unwrap_pad(wp_AesWrapPadCtx *ctx, unsigned char* iv, unsigned char *o
         if (ret <= 0) {
             ok = 0;
         }
-        if (padded_len != ret) {
+        if (padded_len != (size_t)ret) {
             OPENSSL_cleanse(out, inLen);
             ok = 0; 
         }
-        //*outLen = ret; 
     }
 
     if (ok) {
@@ -588,14 +590,10 @@ static int wp_aes_wrap_pad_update(wp_AesWrapPadCtx *ctx, unsigned char *out,
         ok = 0;
     }
 
-    printf("inLen=%ld\n", inLen);
-    printf("buffer len outSize=%ld\n", outSize);
-
     if (ok && (inLen == 0)) {
         *outLen = 0;
     }
     else if (ok) {
-        int rc;
         word32 outSz = (word32)outSize;
         unsigned char* iv;
 
@@ -607,14 +605,14 @@ static int wp_aes_wrap_pad_update(wp_AesWrapPadCtx *ctx, unsigned char *out,
         }
 
     #if LIBWOLFSSL_VERSION_HEX >= 0x05000000
-        (void)rc;
         if (ctx->wrap) {
-            ok = wp_aes_wrap_pad(ctx, iv, out, outSz, &outl, in, inLen) != 0; 
+            ok = wp_aes_wrap_pad(ctx, iv, out, outSz, &outl, in, inLen) != 0;
         }
         else {
             ok = wp_aes_unwrap_pad(ctx, iv, out, &outl, in, inLen) != 0;
         }
     #else
+        ok = 0;
         printf("KEYWRAPPAD is not supported by LIBWOLFSSL_VERSION_HEX < 0x05000000");
     #endif
         if (ok) {
