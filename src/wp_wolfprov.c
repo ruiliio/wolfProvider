@@ -492,6 +492,16 @@ static const OSSL_ALGORITHM wolfprov_ciphers[] = {
       "" },
 #endif
 
+#ifdef HAVE_AES_KEYWRAPPAD
+    /* AES Kwy Wrap - padded */
+    { WP_NAMES_AES_256_WRAP_PAD, WOLFPROV_PROPERTIES, wp_aes256wrappad_functions,
+      "" },
+    { WP_NAMES_AES_192_WRAP_PAD, WOLFPROV_PROPERTIES, wp_aes192wrappad_functions,
+      "" },
+    { WP_NAMES_AES_128_WRAP_PAD, WOLFPROV_PROPERTIES, wp_aes128wrappad_functions,
+      "" },
+#endif
+
 #ifdef WP_HAVE_DES3CBC
     { WP_NAMES_DES_EDE3_CBC, WOLFPROV_PROPERTIES, wp_des3cbc_functions,
      "" },

@@ -143,6 +143,15 @@ TEST_CASE test_case[] = {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     TEST_DECL(test_aes128_ccm_tls, NULL),
 #endif
+
+#ifdef HAVE_AES_KEYWRAP
+    TEST_DECL(test_wrap, NULL),
+#endif
+
+#ifdef HAVE_AES_KEYWRAPPAD
+    TEST_DECL(test_wrap_pad, NULL),
+#endif
+
 #endif
 #ifdef WP_HAVE_RANDOM
     TEST_DECL(test_random, NULL),
