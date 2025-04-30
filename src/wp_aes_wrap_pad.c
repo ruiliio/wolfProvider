@@ -564,7 +564,8 @@ int wp_AesKeyUnWrapPad_ex(Aes *aes, unsigned char *iv, unsigned char *out,
         }
     }
     memcpy(iv, A, 8);
-    return inLen;
+    
+    return (int)inLen;
 }
 
 /**
